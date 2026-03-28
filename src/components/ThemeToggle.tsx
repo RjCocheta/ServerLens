@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import {AnimatePresence, motion} from "motion/react"
 
 type ThemeMode = 'light' | 'dark' | 'auto'
 
@@ -31,8 +32,15 @@ function applyThemeMode(mode: ThemeMode) {
   document.documentElement.style.colorScheme = resolved
 }
 
+const ButtonTextVariants = {
+  initial: { opacity: 0, y: -20,scale:0.7 },
+  normal: { opacity: 1, y: 0, scale:1},
+  exit: { opacity: 0, y: 20 ,scale:0.5}
+}
+
 export default function ThemeToggle() {
   const [mode, setMode] = useState<ThemeMode>('auto')
+  const [isHovering, setisHovering] = useState<boolean>(false)
 
   useEffect(() => {
     const initialMode = getInitialMode()
@@ -68,14 +76,24 @@ export default function ThemeToggle() {
       : `Theme mode: ${mode}. Click to switch mode.`
 
   return (
-    <button
-      type="button"
-      onClick={toggleMode}
-      aria-label={label}
-      title={label}
-      className="rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--sea-ink)] shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5"
-    >
-      {mode === 'auto' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'}
-    </button>
+    <motion.div onHoverStart={()=>{setisHovering(true)}} onHoverEnd={()=>{setisHovering(false)}}>
+      <motion.button
+        type="button"
+        onClick={toggleMode}
+        aria-label={label}
+        title={label}
+        initial={{ scale: 0.8 }}
+        animate={{ scale: isHovering? 1.05 : 1 }}
+        
+        transition={{ type: "spring", duration: 0.1, bounce: 0.3 }}
+        className="rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--sea-ink)] shadow-[0_8px_22px_rgba(30,90,72,0.08)]"
+      >
+        <AnimatePresence mode='popLayout'>
+          <motion.p variants={ButtonTextVariants} initial={"initial"} animate={"normal"} exit={"exit"} key={mode} transition={{ease:"easeOut",duration:0.15,delay:0.05}}>
+            {mode === 'auto' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'}
+          </motion.p>
+        </AnimatePresence>
+      </motion.button>
+    </motion.div>
   )
 }
